@@ -1,0 +1,548 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Group-Mapper">
+	<insert id="insertStRoom">
+		INSERT INTO gr(gno,id,name,code,goal)
+		VALUES((SELECT NVL(MAX(gno),0)+1 FROM gr),#{id},#{name},#{code},#{goal})
+	</insert>
+	
+	<select id="getGroupNum" resultType="string">
+		SELECT gno
+		FROM gr
+		WHERE code = #{code}
+	</select>
+	
+	<insert id="insertStRoomMember">
+		INSERT INTO grMember(gmno,gno,id)
+		VALUES((SELECT NVL(MAX(gmno),0)+1 FROM grMember),#{gno},#{id})
+		<selectKey keyProperty="gmno" resultType="int" order="AFTER">
+			SELECT gmno FROM grMember WHERE id = #{id} AND gno = #{gno}
+		</selectKey>
+	</insert>
+	<select id="getGroupList" resultType="group">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM rnum,A.*
+		     FROM(SELECT *
+		          FROM gr
+		          WHERE gno IN (SELECT gno
+		                        FROM grMember
+		                        WHERE id = #{id})) A
+		     WHERE ROWNUM &lt;= #{end}) B              
+		WHERE rnum &gt;= #{start}
+		AND name LIKE '%'||#{name}||'%'
+	</select>
+	
+	<select id="getGroupListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM gr
+		WHERE gno IN (SELECT gno
+					  FROM grMember
+					  WHERE id = #{id})
+		AND name LIKE '%'||#{name}||'%'
+	</select>
+	
+	
+	<select id="getMemberCount" resultType="int">
+		SELECT COUNT(*)
+		FROM GRMember
+		WHERE id = #{id}
+		AND gno = #{gno}
+	</select>
+	
+	<select id="getGroupCount" resultType="int">
+		SELECT COUNT(*)
+		FROM GRMember
+		WHERE gno = #{gno}
+	</select>
+	
+	<select id="getGroupInfo" resultType="group">
+		SELECT *
+		FROM gr
+		WHERE gno = #{gno}
+	</select>
+	
+	<select id="getGroupMember" resultType="groupMember2">
+		SELECT gmno,gno,g.id,fileName,m.name memberName
+		FROM grMember g JOIN member m ON(g.id = m.id)
+		WHERE gno = #{gno}
+	</select>
+	
+	<update id="modifyGroupMember">
+		UPDATE grMember
+		SET title = #{title},
+		content = #{content}
+		WHERE id = #{id}
+		AND gno = #{gno}
+	</update>
+	
+	<select id="groupCountCheck" resultType="int">
+		SELECT COUNT(*)
+		FROM gr
+		WHERE id = #{id}
+	</select>
+	
+	<insert id="fileRegist">
+		INSERT INTO grFile(fno,fileName,originFileName,fileType,uploadPath,id,gno,regdate)
+		VALUES(grfile_seq.nextval,#{fileName},#{originFileName},#{fileType},#{uploadPath},#{id},#{gno},sysdate)
+	</insert>
+	
+	<select id="getGroupFileList" resultType="groupFile">
+		SELECT *
+		FROM grFile
+		WHERE gno = #{gno}
+	</select>
+	
+	<select id="getGroupFile" resultType="groupFile">
+		SELECT *
+		FROM grFile
+		WHERE fno = #{fno}
+	</select>
+	
+	<delete id="fileDelete">
+		DELETE FROM grFile
+		WHERE fno = #{fno}
+	</delete>
+	
+	<insert id="addChatMessage">
+		INSERT INTO grChat(gcno,gno,content,id,regdate)
+		VALUES((SELECT NVL(MAX(gcno),0)+1 FROM grChat),#{gno},#{content},#{id},sysdate)
+		<selectKey keyProperty="gcno" resultType="int" order="AFTER">
+			SELECT NVL(MAX(gcno),0)+1 FROM grChat
+		</selectKey>
+	</insert>
+	
+	<select id="getMessages" resultType="groupChatList">
+		SELECT *
+		FROM grChat g LEFT OUTER JOIN member m ON(g.id = m.id)
+		WHERE gno = #{gno}
+		ORDER BY gcno
+	</select>
+	
+	<delete id="groupMemberOut">
+		DELETE FROM grMember
+		WHERE id = #{id}
+		AND gno = #{gno}
+	</delete>
+	
+	<select id="getDDitMember" resultType="dditMember">
+		SELECT dno,d.name,addr1,addr2,d.tel,room,id,d.regdate,fileName
+		FROM dditMember d JOIN member m ON(d.name = m.name)
+		WHERE room = #{room}
+	</select>
+	
+	<delete id="groupDelete">
+		DELETE FROM gr
+		WHERE gno = #{gno}
+	</delete>
+	
+	<insert id="memoWrite">
+		INSERT INTO grMemo(mno,gno,content,id,regdate)
+		VALUES((SELECT NVL(MAX(mno),0)+1 FROM grMemo),#{gno},#{content},#{id},sysdate)
+		<selectKey keyProperty="mno" resultType="int" order="AFTER">
+			SELECT NVL(MAX(mno),0)+1
+			FROM grMemo
+		</selectKey>
+	</insert>
+	
+	<select id="getMemoList" resultType="com.spring.dto.MemoVO">
+		SELECT *
+		FROM grMemo
+		WHERE gno = #{gno}
+		ORDER BY mno DESC
+	</select>
+	
+	<delete id="memoDelete">
+		DELETE FROM grMemo 
+		WHERE mno = #{mno}
+	</delete>
+	
+	<insert id="dayWrite">
+		INSERT INTO grDday(dno,gno,id,content,year,month,day,grDate,regdate)
+		VALUES((SELECT NVL(MAX(dno),0)+1 FROM grDday),#{gno},#{id},#{content},#{year},#{month},#{day},#{grdate},sysdate)
+		<selectKey keyProperty="dno" resultType="int" order="AFTER">
+			SELECT NVL(MAX(dno),0)+1 
+			FROM grDday
+		</selectKey>
+	</insert>
+	
+	<select id="getDay" resultType="day">
+		SELECT *
+		FROM grDday   
+		WHERE dno = (SELECT NVL(MAX(dno),0)
+		             FROM grDday
+		             WHERE gno = #{gno})
+	</select>
+	
+	<select id="getGroupMemberCount" resultType="int">
+		SELECT COUNT(*)
+		FROM grMember
+		WHERE gno = #{gno}
+	</select>
+	
+	<select id="getTodoList" resultType="todoList">
+		SELECT *
+		FROM grTodoList
+		WHERE gno = #{gno}
+		AND id = #{id}
+		AND vertify = 'X'
+	</select>
+	
+	<select id="getMemberTodoList" resultType="todoList">
+		SELECT *
+		FROM grTodoList
+		WHERE gno = #{gno}
+		AND gtno = #{gtno}
+	</select>
+	
+	<update id="modifyTodoList">
+		UPDATE grTodoList
+		SET title = #{title},
+		content = #{content}
+		WHERE gno = #{gno}
+		AND gtno = #{gtno}	
+		AND id = #{id}	
+	</update>
+	
+	<select id="TodayTodoListCheck" resultType="todoList">
+		SELECT *
+		FROM grTodoList
+		WHERE gno = #{gno}
+		AND regdate  = #{today}
+	</select>
+	
+	<insert id="todoListWrite">
+		INSERT INTO grTodoList(gtno,gno,gmno,id,title,content,vertify,regdate)
+		VALUES((SELECT NVL(MAX(gtno),0)+1 FROM grTodoList),#{gno},#{gmno},#{id},#{title},#{content},'X',TO_CHAR(sysdate,'YYYY/MM/DD'))
+	</insert>
+	
+	<select id="getGroupMemberNum" resultType="int">
+		SELECT gmno
+		FROM grMember
+		WHERE gno = #{gno}
+		AND id = #{id}
+	</select>
+	
+	<insert id="insertGroupBoard">
+		INSERT INTO grBoard(gbno,gno,title,id,content,hit,good,bad,regdate)
+		VALUES((SELECT NVL(MAX(gbno),0)+1 FROM grBoard),#{gno},#{title},#{id},#{content},0,0,0,TO_CHAR(sysdate,'YYYY/MM/DD'))
+	</insert>
+	
+	<select id="getGroupBoardMaxNum" resultType="int">
+		SELECT NVL(MAX(gbno),0)
+		FROM grBoard
+	</select>
+	
+	<insert id="insertGroupAttach">
+		INSERT INTO grAttach(gano,gbno,gno,originfileName,fileName,path,id,regdate)
+		VALUES((SELECT NVL(MAX(gano),0)+1 FROM grAttach),#{gbno},#{gno},#{originfileName},#{fileName},#{path},#{id},sysdate)
+	</insert>
+	
+	<sql id="search">
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE g.gno = #{gno}
+				AND (title LIKE '%'||#{keyword}||'%'
+				OR content LIKE '%'||#{keyword}||'%')
+			</when>
+			<otherwise>
+				WHERE g.gno = #{gno}
+				AND ${search_option} LIKE '%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</sql>
+	<select id="getGroupBoardCount" resultType="int">
+		SELECT COUNT(*)
+		FROM GRBOARD g
+		<include refid="search"/>
+	</select>
+	
+	<select id="getGroupBoardList" resultType="groupBoardList">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM AS rnum,A.*
+		    FROM(SELECT g.gbno gbno,g.gno gno,title,g.id id,content,g.regdate regdate,hit,good,bad,name,m.fileName fileName
+         		 FROM grBoard g LEFT OUTER JOIN member m ON(g.id = m.id)
+		         <include refid="search"/>
+		         ORDER BY g.gbno DESC) A
+		    WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start} 
+	</select>
+	
+	<select id="getGroupAttach" resultType="groupAttach">
+		SELECT *
+		FROM grAttach
+		WHERE gano = #{gano}
+	</select>
+	
+	<select id="GroupBoardBadCheck" resultType="groupgoodbadCheck">
+		SELECT *
+		FROM grlikecheck
+		WHERE gbno = #{gbno}
+		AND id = #{id}
+	</select>
+	
+	<select id="getGroupBoard" resultType="groupBoard">
+		SELECT *
+		FROM grBoard
+		WHERE gbno = #{gbno}
+	</select>
+	
+	<update id="updateBad">
+		UPDATE grBoard
+		SET bad = bad + 1
+		WHERE gbno = #{gbno}
+		
+	</update>
+	
+	<update id="updateGood">
+		UPDATE grBoard
+		SET good = good + 1
+		WHERE gbno = #{gbno}
+		
+	</update>
+	
+	<insert id="addGroupBoardCheck">
+		INSERT INTO grlikecheck
+		VALUES((SELECT nvl(MAX(glno),0) +1 FROM grlikecheck),#{id},#{gbno},sysdate)
+	</insert>
+	
+	<select id="getGroupBoardAttach" resultType="groupAttach">
+		SELECT *
+		FROM grAttach
+		WHERE gbno = #{gbno}
+		AND gno = #{gno}
+	</select>
+	
+	<delete id="groupBoardAttachDelete">
+		DELETE FROM grAttach
+		WHERE gano = #{gano}
+	</delete>
+	
+	<update id="GroupBoardModify">
+		UPDATE grBoard
+		SET title = #{title},
+		content = #{content}
+		WHERE gno = #{gno}
+		AND gbno = #{gbno}
+	</update>
+	
+	<select id="getGroupboard" resultType="groupBoardList">
+		SELECT g.gbno gbno,g.gno gno,title,g.id id,content,g.regdate regdate,hit,good,bad,name,m.fileName fileName
+        FROM grBoard g LEFT OUTER JOIN member m ON(g.id = m.id)
+		WHERE gbno = #{gbno}
+        AND gno = #{gno}
+	</select>
+	
+	<delete id="GroupBoardDelete">
+		DELETE FROM grBoard
+		WHERE gbno = #{gbno}
+	</delete>
+	
+	<select id="getGroupBoardCheck" resultType="groupBoard">
+		SELECT *
+		FROM grBoard
+		WHERE id = #{id}
+		AND gno = #{gno}
+		AND regdate =  #{today}
+		
+	</select>
+	
+	<select id="GroupBoardTest" resultType="groupBoardList">
+		SELECT g.gbno gbno,g.gno gno,title,g.id id,content,g.regdate regdate,hit,good,bad,name,m.fileName fileName
+        FROM grBoard g LEFT OUTER JOIN member m ON(g.id = m.id)
+		WHERE gno = #{gno}
+		AND g.regdate =  #{today}
+	</select>
+	
+	<select id="getTodoListOne" resultType="todoList">
+		SELECT *
+        FROM grtodoList
+        WHERE gno = #{gno}
+        AND regdate = #{today}
+        AND id = #{id}
+	</select>
+	
+	<delete id="todoListDelete">
+		DELETE FROM grtodoList
+		WHERE gtno = #{gtno}
+	</delete>
+	
+	<update id="todoListUpdate">
+		UPDATE grtodoList
+		SET vertify = 'O'
+		WHERE gtno = #{gtno}
+	</update>
+	
+	<select id="getTodoListVertifyCount" resultType="int">
+		SELECT COUNT(*)
+		FROM grtodoList
+		WHERE gno = #{gno}
+		AND vertify = 'X'
+	</select>
+	
+	<select id="getMemberTodoListVertifyCount" resultType="int">
+		SELECT COUNT(*)
+		FROM grtodoList
+		WHERE gno = #{gno}
+		AND id = #{id}
+		AND vertify = 'X'
+	</select>
+	
+	<select id="getFullGroupList" resultType="group">
+		SELECT *
+		FROM gr
+		ORDER BY gno DESC
+	</select>
+	
+	<select id="getTodayTodoList" resultType="todoList">
+		SELECT *
+		FROM grtodoList
+		WHERE gno = #{gno}
+		AND regdate = #{today}
+	</select>
+	
+	<select id="getMemberGroupList" resultType="group">
+		SELECT *
+		FROM gr
+		WHERE gno  IN (SELECT gno
+		              FROM grmember
+		              WHERE id = #{id})
+		AND ROWNUM &lt;=5		              
+		
+	</select>
+	
+	<sql id="adminSearch">
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE id LIKE '%'||#{keyword}||'%'
+				OR name LIKE '%'||#{keyword}||'%'
+				OR id LIKE '%'||#{keyword}||'%'
+			</when>
+			<otherwise>
+				WHERE ${search_option} LIKE '%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</sql>
+	
+	
+	<select id="getAllGroupListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM gr
+		<include refid="adminSearch"/>
+	</select>
+	
+	
+	<select id="getAllGroupList" resultType="groupList">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM rnum,A.*
+		     FROM(SELECT *
+		          FROM gr
+		          <include refid="adminSearch"/>
+		          ORDER BY gno DESC) A
+		     WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start}
+	</select>
+	
+	<select id="getgroupchatList" resultType="groupChat">
+		SELECT *
+		FROM grchat
+		WHERE gno = #{gno}
+	</select>
+	
+	<select id="getAllGroupBoard" resultType="groupBoardList">
+		SELECT *
+		FROM grboard
+		WHERE gno = #{gno}
+	</select>
+	
+	<select id="getTodoListVo" resultType="todoList">
+		SELECT *
+		FROM grTodoList
+		WHERE gtno = #{gtno}
+	</select>
+	
+	<select id="getAllTodoList" resultType="todoList">
+		SELECT *
+		FROM grTodoList
+		WHERE id = #{id}
+		AND gno = #{gno}
+	</select>
+	
+	<select id="getGroupOutList" resultType="groupOutList">
+		SELECT *
+		FROM grOutList
+		WHERE id = #{id}
+		AND gno = #{gno}
+	</select>
+	
+	<insert id="addGroupMemberOutList">
+		INSERT INTO groutlist(gono,gno,id,regdate)
+		VALUES((SELECT NVL(MAX(gono),0)+1 FROM groutlist),#{gno},#{id},sysdate)
+	</insert>
+	
+	<select id="getGroupAllBoard" resultType="groupBoard">
+		SELECT *
+		FROM grBoard
+		WHERE gno = #{gno}
+	</select>
+	
+	<update id="groupModify">
+		UPDATE gr
+		SET name = #{name},
+		goal = #{goal},
+		code = #{code}
+		WHERE gno = #{gno}
+	</update>
+	
+	<update id="groupChatModify">
+		UPDATE grChat
+		SET content = #{content}
+		WHERE gcno = #{gcno}
+	</update>
+	
+	<select id="getGroupChat" resultType="groupChat">
+		SELECT *
+		FROM grChat
+		WHERE gcno = #{gcno}
+	</select>
+	
+	<delete id="groupChatDelete">
+		DELETE FROM grChat
+		WHERE gcno = #{gcno}
+	</delete>
+	
+	<select id="getGroupListVO" resultType="groupvoList">
+		SELECT gno,g.id id,g.name,goal,code,m.name memberName,fileName
+		FROM gr g LEFT OUTER JOIN member m ON(g.id = m.id)
+		WHERE gno = #{gno}
+	</select>
+	
+	<select id="getGroupMemoList" resultType="groupMemo">
+		SELECT mno,gno,g.id id,content,g.regdate regdate,m.name,m.fileName
+		FROM grmemo g LEFT OUTER JOIN member m ON(g.id = m.id)
+		WHERE gno = #{gno}
+		ORDER BY mno DESC
+	</select>
+	
+	<update id="groupMemoModify">
+		UPDATE grmemo
+		SET content = #{content}
+		WHERE mno = #{mno}
+	</update>
+	
+	<select id="getGroupMemo" resultType="groupMemo">
+		SELECT mno,gno,g.id id,content,g.regdate regdate,m.name,m.fileName
+		FROM grmemo g LEFT OUTER JOIN member m ON(g.id = m.id)
+		WHERE mno = #{mno}
+		ORDER BY mno DESC
+	</select>
+	
+	<insert id="adminTodoListWrite">
+		INSERT INTO grTodoList(gtno,gno,gmno,id,title,content,vertify,regdate)
+		VALUES((SELECT NVL(MAX(gtno),0)+1 FROM grTodoList),#{gno},0,#{id},#{title},#{content},'X',TO_CHAR(sysdate,'YYYY/MM/DD'))
+	</insert>
+	
+</mapper>
+
+
+    

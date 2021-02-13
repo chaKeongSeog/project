@@ -1,0 +1,86 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Notice-Mapper">
+	<!-- mybatis 조건문의 변수명에는 #을 사용하지 않음 -->
+	<sql id="search">
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE brd_gb = 'A01'
+				AND
+				(content like '%'||#{keyword}||'%'
+				OR title like '%'||#{keyword}||'%')
+			</when>
+			<otherwise>
+				WHERE brd_gb = 'A01'
+				AND
+				${search_option} like
+				'%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</sql>
+	<select id="getSearchNoticeList" resultType="com.spring.dto.BoardListVO">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM AS rnum,A.*
+		    FROM(SELECT bno,title,b.id,content,b.ref ref,b.ref_step ref_step,b.ref_level ref_level,b.regdate regdate,hit,brd_gb,m.name,m.fileName
+		        FROM board b JOIN member m ON(b.id = m.id)
+		        <include refid="search"/>
+		        ORDER BY ref DESC,ref_step) A
+		    WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start} 
+	</select>
+	
+	<select id="getListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM board
+		 <include refid="search"/>
+	</select>
+	
+	<insert id="regist">
+		INSERT INTO board(bno,title,id,content,ref,ref_step,ref_level,regdate,hit,brd_gb)
+		VALUES((select NVL(MAX(bno),0)+1 FROM board),#{title},#{id},#{content},(select NVL(MAX(bno),0)+1 FROM board),1,0,sysdate,0,'A01')
+	</insert>
+	
+	<insert id="answer">
+		INSERT INTO board(bno,title,id,content,ref,ref_step,ref_level,regdate,hit,brd_gb)
+		VALUES((select NVL(MAX(bno),0)+1 FROM board),#{title},#{id},#{content},#{ref},#{ref_step},#{ref_level},sysdate,0,'A01')
+	</insert>
+	
+	<update id="ref_stepUpdate">
+		UPDATE board
+		SET ref_step = ref_step + 1
+		WHERE ref = #{ref}
+		AND ref_step >= #{ref_step}
+		And brd_gb = 'A01'
+	</update>
+	
+	<select id="getDetail" resultType="boardList">
+		SELECT *
+		FROM board b JOIN member m ON(b.id = m.id)
+		WHERE bno = #{bno}
+	</select>
+	<update id="update">
+		UPDATE board
+		SET title = #{title},
+		content = #{content}
+		WHERE bno = #{bno}
+	</update>
+	
+	<delete id="delete">
+		delete from board
+		where bno = #{bno}
+	</delete>
+	
+	<select id="getBno" resultType="int">
+		SELECT MAX(bno)
+	    FROM board
+	    WHERE brd_gb = 'A01' 
+	</select>
+	
+	<update id="updateHit">
+		UPDATE board
+		SET hit = hit + 1
+		WHERE bno = #{bno}
+		AND brd_gb = 'A01'
+	</update>
+</mapper>

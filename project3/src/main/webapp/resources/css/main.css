@@ -1,0 +1,176 @@
+@charset "UTF-8";
+@media(max-width:1000px){
+	.sidenav{
+		display:none;
+	}
+}
+
+.sidenav {
+  height: 100%;
+  width: 370px;
+  position: fixed;
+  z-index: 1;
+  top: 56px;
+  right: 0;
+  background-color: #212529;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+.photo {
+	display:inline-block;
+}
+.name h3{
+	display:inline-block;
+	vertical-align: middle;
+}
+.name{
+	margin-left:10px;
+	display:inline-block;
+}
+.pull-left{
+	float:left;
+	
+}
+.pull-left::after{
+	content:"";
+	display: block;
+	clear:both;
+}
+.pull-right{
+	float:right;
+	
+}
+.pull-right::after{
+	content:"";
+	display: block;
+	clear:both;
+}
+.username{
+	font-size:13px;
+}
+.basic-outlogin{
+	margin: 20px;
+}
+.memberArea{
+	margin-top: 10px;
+}
+.clearfix{
+	clear:both;
+	background-color: #afafaf;
+}
+span{
+	cursor:pointer;
+}
+.widget{
+	margin-top: 10px;
+}
+
+}
+.img-wrap,.slider{
+	display: block;
+    position: relative;
+    height: 0;
+    overflow: hidden;
+    background-color: red;
+}
+
+body,ul,li{
+    list-style:none;
+    margin:0;
+    padding:0;
+}
+a{
+    color:black;
+    text-decoration:none;
+}
+
+
+.slider>.side-btns>div{
+    position:absolute;
+    top:0;
+    left:12%;
+    width:50%;
+    height:100%;
+
+    
+}
+.slider>.side-btns>div:last-child{
+    left:auto;
+    right:20%;
+}
+.slider>.side-btns>div>span{
+    position:absolute;
+    top:50%;
+    left:0;
+    transform:translatey(-50%);
+    font-size:4rem;
+    cursor:pointer;   
+}
+.slider>.side-btns>div:active>span{
+    transform:translatey(-40%);
+}
+.slider>.side-btns>div:last-child>span{
+    left:auto;
+    right:0;
+ }
+.slider>.slides>div{
+    position:absolute;
+    top:0;
+    right:18%;
+    width:100%;
+    height:100%;
+    z-index:-1;
+    opacity:0;
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:cover;
+    
+}
+.slider>.slides>div.active{
+    opacity:1;
+}
+.slider>.pages{
+    position:absolute;
+    bottom:0;
+    left:48%;
+    transform:translatex(-50%);
+    
+}
+.slider>.pages>div{
+    width:30px;
+    height:30px;
+    background-color:rgba(173,173,173,0.5);
+    display:inline-block;
+    
+}
+.slider>.pages>div.active{
+    background-color:rgba(173,173,173,1);
+}
+.carousel-item{
+	width:100%;
+	height: 100%;
+	background-color: red;
+}

@@ -1,0 +1,12 @@
+@charset "UTF-8";
+
+#replyArea{
+	position: relative;
+}
+#reply{
+	position: absolute;
+	top:0;
+	right:0;
+	width:70px;
+	height:62px;
+}

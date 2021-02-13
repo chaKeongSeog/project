@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+  
+  <typeAliases>
+		<typeAlias type="java.lang.String" alias="str" />
+		<typeAlias type="java.lang.Integer" alias="int" />
+		<typeAlias type="com.spring.dto.MemberVO" alias="member" />
+		<typeAlias type="com.spring.dto.BoardVO" alias="board" />
+		<typeAlias type="com.spring.dto.BoardListVO" alias="boardList" />
+		<typeAlias type="com.spring.dto.ReplyVO" alias="reply" />
+		<typeAlias type="com.spring.dto.EvaluationVO" alias="eval" />
+		<typeAlias type="com.spring.dto.LectureReplyVO" alias="lectureReplyList" />
+		<typeAlias type="com.spring.dto.ChatVO" alias="chat" />
+		<typeAlias type="com.spring.dto.ChatListVO" alias="chatList" />
+		<typeAlias type="com.spring.dto.ScheduleVO" alias="schedule" />
+		<typeAlias type="com.spring.dto.GroupVO" alias="group" />
+		<typeAlias type="com.spring.dto.GroupListVO" alias="groupList" />
+		<typeAlias type="com.spring.dto.GroupVOList" alias="groupvoList" />
+		<typeAlias type="com.spring.dto.GroupMemberVO" alias="groupMember" />
+		<typeAlias type="com.spring.dto.GroupMemberVO2" alias="groupMember2" />
+		<typeAlias type="com.spring.dto.GroupFileVO" alias="groupFile" />
+		<typeAlias type="com.spring.dto.GroupChatVO" alias="groupChat" />
+		<typeAlias type="com.spring.dto.GroupChatListVO" alias="groupChatList" />
+		<typeAlias type="com.spring.dto.DDitMemberVO" alias="dditMember" />
+		<typeAlias type="com.spring.dto.GroupScheduleVO" alias="groupSchedule" />
+		<typeAlias type="com.spring.dto.AttachListVO" alias="attachList" />
+		<typeAlias type="com.spring.dto.AttachVO" alias="attach" />
+		<typeAlias type="com.spring.dto.TodoListVO" alias="todoList" />
+		<typeAlias type="com.spring.dto.DDAYVO" alias="day" />
+		<typeAlias type="com.spring.dto.MemoVO" alias="meno" />
+		<typeAlias type="com.spring.dto.MemberMemoVO" alias="membermemo" />
+		<typeAlias type="com.spring.dto.GroupMemoVO" alias="groupMemo" />
+		<typeAlias type="com.spring.dto.GroupBoardVO" alias="groupBoard" />
+		<typeAlias type="com.spring.dto.GroupBoardListVO" alias="groupBoardList" />
+		<typeAlias type="com.spring.dto.GroupAttachVO" alias="groupAttach" />
+		<typeAlias type="com.spring.dto.GroupGoodBadCheckVO" alias="groupgoodbadCheck" />
+		<typeAlias type="com.spring.dto.GroupOutListVO" alias="groupOutList" />
+		<typeAlias type="com.spring.dto.QnaVO" alias="qna" />
+		<typeAlias type="com.spring.dto.MemberListVO" alias="memberList" />
+		
+		
+	</typeAliases>
+</configuration>
+
+
+
+
+
+
+

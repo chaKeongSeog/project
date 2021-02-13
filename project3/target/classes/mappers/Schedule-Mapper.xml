@@ -1,0 +1,54 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "Schedule-Mapper">
+	<select id="showSchedule" resultType = "schedule">
+		SELECT *
+		FROM schedule
+		WHERE id = #{id}
+		ORDER BY sno DESC
+	</select>
+	<insert id="addSchedule">
+ 	INSERT INTO schedule
+ 	VALUES ((SELECT NVL(MAX(sno),0)+1 FROM schedule),#{title},#{startDate},#{endDate},#{id})
+	</insert>
+	
+	<delete id="delete">
+		DELETE FROM schedule
+		WHERE sno = #{sno}
+	</delete>
+	
+	<select id="getNum" resultType="int">
+		SELECT NVL(MAX(sno),0)
+		FROM schedule 	
+	</select>
+	
+	
+	<select id="getGroupScheduleList" resultType="groupSchedule">
+		SELECT *
+		FROM grSchedule
+		WHERE gno = #{gno}
+	</select>
+	
+	<insert id="GroupAddSchedule">
+		INSERT INTO grSchedule(sno,gno,title,startDate,endDate,id)
+		VALUES((SELECT NVL(MAX(sno),0)+1 FROM grSchedule),#{gno},#{title},#{startDate},#{endDate},#{id})
+	</insert>
+	
+	<select id="getGroupScheduleNum" resultType="int">
+		SELECT NVL(MAX(sno),0)
+		FROM grSchedule
+		WHERE gno = #{gno}
+	</select>
+	
+	<delete id="groupScheduleDelete">
+		DELETE FROM grSchedule
+		WHERE sno = #{sno}
+	</delete>
+	
+	<select id="getGroupScheduleCount" resultType="int">
+		SELECT COUNT(*)
+		FROM grschedule
+		WHERE gno = #{gno}
+	</select>
+</mapper>

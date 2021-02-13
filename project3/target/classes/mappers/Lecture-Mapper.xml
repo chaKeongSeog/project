@@ -1,0 +1,178 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Lecture-Mapper">
+	<sql id="search">
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE eno is not null
+				AND (divide = '풀스택' OR divide = '인공지능')
+				AND title like '%'||#{keyword}||'%'	
+			</when>
+			<when test="search_option == '풀스택'">
+				WHERE eno is not null
+				AND (divide = '풀스택')
+				AND title like '%'||#{keyword}||'%'	
+			</when>
+			<otherwise>
+				WHERE eno is not null
+				AND (divide = '인공지능')
+				AND title like '%'||#{keyword}||'%'	
+			</otherwise>
+		</choose>	
+	</sql>
+
+	<select id="getListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM evaluation
+		<include refid="search"></include>
+	</select>
+	
+	<select id="getList" resultType="eval">		
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM rnum,A.*
+		    FROM(SELECT eno,e.id id,ref,ref_step,ref_level,lecturename,professorname,year,month,divide,title,content,totalscore,likecount,brd_gb,name,fileName,e.regdate regdate
+				 FROM EVALUATION e JOIN member m ON(e.id = m.id)
+		        <include refid="search"></include>
+		        ORDER BY ref DESC,ref_step) A
+		    WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start}
+	</select>
+	
+	<insert id="regist">
+		INSERT INTO EVALUATION(eno,id,ref,ref_step,ref_level,lectureName,professorName,year,month,divide,title,content,totalScore,likeCount,brd_gb,regdate)
+		VALUES((SELECT NVL(MAX(eno),0)+1 FROM EVALUATION),#{id},(SELECT NVL(MAX(eno),0)+1 FROM EVALUATION),1,1,#{lecturename},#{professorname},#{year},#{month},#{divide},#{title},#{content},#{totalscore},0,'B01',sysdate)
+	</insert>
+	
+	<delete id="delete">
+		DELETE FROM EVALUATION
+		WHERE eno = #{eno}
+	</delete>
+	<update id="likeUp">
+		UPDATE EVALUATION
+		SET likeCount = likeCount + 1
+		WHERE eno = #{eno}
+	</update>
+	
+	<select id="getEvaluation" resultType="eval">
+		SELECT eno,e.id id,ref,ref_step,ref_level,lecturename,professorname,year,month,divide,title,content,totalscore,likecount,brd_gb,e.regdate regdate,name,fileName
+		FROM EVALUATION e LEFT OUTER JOIN member m ON(e.id = m.id)
+		WHERE eno = #{eno}
+	</select>
+	
+	<select id="likeCheck" resultType="int">
+		SELECT eno
+		FROM likeCheck
+		WHERE eno = #{eno}
+	</select>
+	
+	<insert id="likeCheckWrite">
+		INSERT INTO likeCheck(lno,id,eno)
+		VALUES((SELECT NVL(MAX(lno),0)+1 FROM likeCheck),#{id},#{eno})
+	</insert>
+	
+	<delete id="likeCheckDelete">
+		DELETE FROM likeCheck
+		WHERE eno = #{eno}
+	</delete>
+	
+	<insert id="reportRegist">
+		INSERT INTO report
+		VALUES((SELECT NVL(MAX(rpno),0)+1 FROM report),#{title},#{content},#{id})
+	</insert>
+	
+	<update id="modify">
+		UPDATE EVALUATION
+		SET lectureName = #{lecturename},
+		professorName = #{professorname},
+		year = #{year},
+		month = #{month},
+		divide = #{divide},
+		title = #{title},
+		content = #{content},
+		totalscore = #{totalscore},
+		regdate = sysdate
+		WHERE eno = #{eno}
+	</update>
+	
+	<update id="refUpdate">
+		UPDATE evaluation
+		SET ref_step = ref_step + 1
+		WHERE ref = #{ref}
+		AND ref_step >= #{ref_step}
+	</update>
+	<insert id="answer">
+		INSERT INTO EVALUATION(eno,id,ref,ref_step,ref_level,lectureName,professorName,year,month,divide,title,content,totalScore,likeCount,brd_gb,regdate)
+		VALUES((SELECT NVL(MAX(eno),0)+1 FROM EVALUATION),#{id},#{ref},#{ref_step},#{ref_level},#{lecturename},#{professorname},#{year},#{month},#{divide},#{title},#{content},#{totalscore},0,'B01',sysdate)
+	</insert>
+	
+	<insert id="replyWrite">
+		INSERT INTO lecturereply(rno,eno,id,content,ref,ref_step,ref_level,regdate)
+	    VALUES((SELECT NVL(MAX(rno),0)+1 FROM lecturereply),#{eno},#{id},#{content},(SELECT NVL(MAX(rno),0)+1 FROM lecturereply),1,1,sysdate)
+	</insert>
+	
+	<select id="replyListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM lecturereply
+		WHERE eno = #{eno}
+	</select>
+	
+	<select id="replyList" resultType="lectureReplyList">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM rnum,A.*
+		     FROM(SELECT rno,eno,l.id id,content,ref,ref_step,ref_level,l.regdate regdate,name,fileName
+		          FROM lecturereply l LEFT OUTER JOIN member m ON(l.id = m.id)
+		          WHERE eno = #{eno}
+		          ORDER BY ref DESC,ref_step) A
+		     WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start}     
+	</select>
+	
+	<update id="replyModify">
+		UPDATE lecturereply
+		SET content = #{rcont}
+		WHERE rno = #{rno}
+	</update>
+	
+	<delete id="replyDelete">
+		DELETE FROM lecturereply
+		WHERE ref = #{ref}
+		AND ref_step >= #{ref_step}
+	</delete>
+	
+	<insert id="replyAnswer">
+		INSERT INTO lecturereply(rno,eno,id,content,ref,ref_step,ref_level,regdate)
+	    VALUES((SELECT NVL(MAX(rno),0)+1 FROM lecturereply),#{eno},#{id},#{content},#{ref},#{ref_step},#{ref_level},sysdate)
+	</insert>
+	
+	<select id="getReply" resultType="lectureReplyList">
+		SELECT *
+		FROM lecturereply
+		WHERE rno = #{rno}
+		AND eno = #{eno}
+	</select>
+	
+	<update id="replyRefUpdate">
+		UPDATE lecturereply
+		SET ref_step = ref_step + 1
+		WHERE ref = #{ref}
+		AND ref_step >= #{ref_step}  
+	</update>
+	
+	<select id="getMaxEno" resultType="int">
+		SELECT MAX(eno)
+		FROM evaluation
+	</select>
+	
+	<delete id="replyDeleteOne">
+		DELETE FROM lecturereply
+		WHERE rno = #{rno}
+	</delete>
+	
+	<select id="getReplyOne" resultType="lectureReplyList">
+        SELECT rno,content,l.regdate regdate,l.id id,eno,name,fileName
+		FROM lecturereply l LEFT OUTER JOIN member m ON(l.id = m.id)  
+		WHERE rno = #{rno}
+	</select>
+	
+</mapper>

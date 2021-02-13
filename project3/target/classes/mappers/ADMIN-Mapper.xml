@@ -1,0 +1,129 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ADMIN-Mapper">
+	<!-- mybatis 조건문의 변수명에는 #을 사용하지 않음 -->
+	<sql id="search">
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE id is not null
+				AND
+				(id like '%'||#{keyword}||'%'
+				OR name like '%'||#{keyword}||'%'
+				OR authority like '%'||#{keyword}||'%')
+			</when>
+			<otherwise>
+				WHERE id is not null
+				AND
+				${search_option} like
+				'%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="dditSearch">
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE name is not null
+				AND
+				(name like '%'||#{keyword}||'%'
+				OR room like '%'||#{keyword}||'%'
+				OR kind like '%'||#{keyword}||'%')
+			</when>
+			<otherwise>
+				WHERE name is not null
+				AND
+				${search_option} like
+				'%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<select id="getMemberListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM member
+		 <include refid="search"/>
+	</select>
+	
+	<select id="getMemberList" resultType="com.spring.dto.MemberVO">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM AS rnum,A.*
+		    FROM(SELECT id,pwd,name,email,tel,TO_DATE(regdate,'yyyy-MM-dd') regdate,authority,filename
+				 FROM member
+		        <include refid="search"/>
+		        ORDER BY regdate DESC) A
+		    WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start} 
+	</select>
+	
+	<select id="getdditMemberListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM dditmember
+		 <include refid="dditSearch"/>
+	</select>
+
+	<select id="getdditmemberList" resultType="com.spring.dto.DDitMemberVO">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM AS rnum,A.*
+		    FROM(SELECT *
+				 FROM dditmember
+		        <include refid="dditSearch"/>
+		        ORDER BY regdate DESC) A
+		    WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start} 
+	</select>
+	
+	
+	<insert id="join">
+		INSERT INTO member(id,pwd,name,email,tel,regdate,authority,fileName)
+		VALUES(#{id},#{pwd},#{name},#{email},#{tel},sysdate,#{authority},#{fileName})
+	</insert>
+	
+	<select id="getMember" resultType="member">
+		SELECT *
+		FROM member
+		WHERE id = #{id}
+	</select>
+	
+	<update id="memberModify">
+		UPDATE member
+		SET tel = #{tel},
+		email = #{email},
+		filename = #{fileName},
+		authority = #{authority}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="memberDelete">
+		UPDATE member
+		SET authority = 'disabled'
+		WHERE id = #{id}
+	</update>
+	
+	<insert id="dditJoin">
+		INSERT INTO dditmember(dno,name,addr1,addr2,tel,kind,room,regdate)
+		VALUES((SELECT NVL(MAX(dno),0)+1 FROM dditmember),#{name},#{addr1},#{addr2},#{tel},#{kind},#{room},sysdate)
+	</insert>
+	
+	<delete id="dditdelete">
+		DELETE FROM dditmember
+		WHERE dno = #{dno}
+	</delete>
+	
+	<select id="getdditmemger" resultType="dditmember">
+		SELECT *
+		FROM dditmember
+		WHERE dno = #{dno}
+	</select>
+	
+	<update id="dditmodify">
+		UPDATE dditmember
+		SET tel = #{tel},
+		name = #{name},
+		addr1 = #{addr1},
+		addr2 = #{addr2},
+		kind = #{kind},
+		room = #{room}
+		WHERE dno = #{dno}
+	</update>
+</mapper>

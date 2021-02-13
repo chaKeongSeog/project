@@ -1,0 +1,196 @@
+@charset "UTF-8";
+@charset "UTF-8";
+.chatSubmitArea{
+	position: relative;
+	margin-top: 10px;
+}
+#chatBtn{
+	position: absolute;
+	top:0;
+	right: 0;
+}
+#writeArea{
+	position: relative;
+}
+#memoListWriteIcon{
+	position: absolute;
+	top:17px;
+	right:20px;
+	width:30px;
+	height:38px;
+	cursor: pointer;
+}
+#memoListUl {
+     list-style: none;
+     margin: 0;
+     padding: 0;
+ }
+
+ h1 {
+     background: #2980b9;
+     color: white;
+     margin: 0;
+     padding: 7px 7px;
+     text-transform: uppercase;
+     font-size: 20px;
+     font-weight: normal;
+ }
+
+ .fa-plus {
+     float: right
+ }
+
+#memoList {
+     background: #fff;
+     height: 40px;
+     line-height: 40px;
+     color: #666;
+     cursor: pointer;
+ }
+
+ #memoList:nth-child(2n) {
+     background: #f7f7f7
+ }
+
+ #memoListSpan {
+     background: #e74c3c;
+     height: 40px;
+     margin-right: 20px;
+     text-align: center;
+     color: white;
+     width: 0;
+     display: inline-block;
+     transition: 0.2s linear;
+     opacity: 0
+ }
+
+ #memoList:hover  #memoListSpan {
+     width: 40px;
+     opacity: 1.0
+ }
+
+#memberStudyListWriteIcon{
+	position: absolute;
+	top:17px;
+	right:20px;
+	width:30px;
+	height:38px;
+	cursor: pointer;
+}
+#memberStudyListUl {
+     list-style: none;
+     margin: 0;
+     padding: 0;
+ }
+
+#memberStudyList {
+     background: #fff;
+     height: 40px;
+     line-height: 40px;
+     color: #666;
+     cursor: pointer;
+ }
+
+#memberStudyList:nth-child(2n) {
+     background: #f7f7f7
+ }
+
+#memberStudyListSpan {
+     background: #e74c3c;
+     height: 40px;
+     margin-right: 20px;
+     text-align: center;
+     color: white;
+     width: 0;
+     display: inline-block;
+     transition: 0.2s linear;
+     opacity: 0
+ }
+
+#memberStudyList:hover  #memberStudyListSpan {
+     width: 40px;
+     opacity: 1.0
+ }
+ #con {
+     width:100%;
+     margin:auto;
+     background: #f7f7f7;
+     box-shadow: 0 0 3px rgba(0, 0, 0, 0.1)
+ }
+.dropdown-toggle::after{
+	display:none;
+}
+#fileName{
+  overflow: hidden;
+     text-overflow: ellipsis;
+     white-space: nowrap;
+     text-align: center;
+}
+table th td{
+	color:black;
+}
+a{
+	color:black;
+}
+
+
+
+
+.dropdown-toggle::after{
+		display:none;
+	}
+	#fileName{
+	  overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+	}
+	body,ul,li{
+		margin: 0;
+		padding:0;
+	}
+	#filesubmenu{
+		display:none;
+		border:1px solid #dfdfdf;
+		border-radius: 10px;
+	}
+	
+	#filesubmenuArea{
+		position: relative;
+	}
+	#filesubmenu{
+		position: absolute;
+		top:0;
+		left: 0;
+	}
+	#file:hover #filesubmenu{
+		display:block;
+		width:100%;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

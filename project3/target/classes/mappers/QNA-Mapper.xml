@@ -1,0 +1,106 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="QNA-Mapper">
+	<!-- mybatis 조건문의 변수명에는 #을 사용하지 않음 -->
+	<sql id="search">
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE brd_gb = 'E01'
+				AND
+				(content like '%'||#{keyword}||'%'
+				OR title like '%'||#{keyword}||'%')
+			</when>
+			<otherwise>
+				WHERE brd_gb = 'E01'
+				AND
+				${search_option} like
+				'%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</sql>
+	<select id="getList" resultType="com.spring.dto.QnaVO">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM AS rnum,A.*
+		    FROM(SELECT bno,title,b.id,content,b.regdate,m.name,m.fileName
+		        FROM board b JOIN member m ON(b.id = m.id)
+		        <include refid="search"/>
+		        ORDER BY bno DESC) A
+		    WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start} 
+	</select>
+	
+	<select id="getListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM board
+		 <include refid="search"/>
+	</select>
+	
+	<insert id="regist">
+		INSERT INTO board(bno,title,id,content,ref,ref_step,ref_level,regdate,hit,brd_gb)
+		VALUES((select NVL(MAX(bno),0)+1 FROM board),#{title},#{id},#{content},(select NVL(MAX(bno),0)+1 FROM board),1,0,sysdate,0,'E01')
+	</insert>
+	
+	
+	<select id="getDetail" resultType="boardList">
+		SELECT *
+		FROM board b JOIN member m ON(b.id = m.id)
+		WHERE bno = #{bno}
+	</select>
+	
+	<update id="update">
+		UPDATE board
+		SET title = #{title},
+		content = #{content}
+		WHERE bno = #{bno}
+	</update>
+	
+	
+	<select id="getBno" resultType="int">
+		SELECT MAX(bno)
+	    FROM board
+	    WHERE brd_gb = 'E01' 
+	</select>
+	
+	<update id="updateHit">
+		UPDATE board
+		SET hit = hit + 1
+		WHERE bno = #{bno}
+		AND brd_gb = 'E01'
+	</update>
+	
+	<select id="getReplyList" resultType="reply">
+		SELECT *
+        FROM (SELECT *
+              FROM reply
+              WHERE bno = #{bno}
+              ORDER BY rno DESC) A
+        WHERE ROWNUM = 1
+	</select>
+	
+	<update id="modify">
+		UPDATE board
+		SET title = #{title},
+		content = #{content}
+		WHERE bno = #{bno}
+		AND brd_gb = 'E01'
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM board
+		WHERE bno = #{bno}
+		AND brd_gb = 'E01'
+	</delete>
+	
+	<select id="getQna" resultType="com.spring.dto.QnaVO">
+		SELECT bno,title,b.id id,content,b.regdate,m.name,m.fileName
+		FROM board b JOIN member m ON(b.id = m.id)
+		WHERE bno = #{bno}
+		AND brd_gb = 'E01'
+	</select>
+	
+	<insert id="answer">
+		INSERT INTO reply(rno,bno,id,content,ref,ref_step,ref_level,regdate,brd_gb)
+		VALUES((SELECT NVL(MAX(rno),0)+1 FROM REPLY),#{bno},#{id},#{content},(SELECT NVL(MAX(rno),0)+1 FROM REPLY),1,1,sysdate,'E01')
+	</insert>
+</mapper>

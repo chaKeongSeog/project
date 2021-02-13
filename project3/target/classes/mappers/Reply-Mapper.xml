@@ -1,0 +1,191 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Reply-Mapper">
+	<insert id="write">
+		INSERT INTO reply(rno,bno,id,content,ref,ref_step,ref_level,brd_gb,regdate)
+		VALUES((SELECT NVL(MAX(rno),0)+1 FROM reply),#{bno},#{id},#{content},(SELECT NVL(MAX(rno),0)+1 FROM reply),1,0,#{brd_gb},sysdate)
+	</insert>
+	<select id="getCount" resultType="int">
+		SELECT COUNT(*)
+		FROM reply
+		WHERE bno = #{bno}
+	</select>
+	
+	<select id="getReplyList" resultType="reply">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM AS rnum,A.*
+		    FROM(SELECT rno,bno,r.id id,content,ref,ref_step,ref_level,r.regdate regdate,m.name name,m.fileName fileName,brd_gb
+		        FROM reply r JOIN member m ON(r.id = m.id)
+		        WHERE bno = #{bno}
+		        ORDER BY ref DESC,ref_step) A
+		    WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start} 
+	</select>
+	
+	<update id="modify">
+		UPDATE reply
+		SET content = #{content}
+		WHERE rno = #{rno}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM reply
+		WHERE rno = #{rno}
+	</delete>
+	
+	<select id="getReply" resultType="reply">
+		SELECT rno,bno,r.id id,content,ref,ref_step,ref_level,r.regdate regdate,m.name name,m.fileName fileName,brd_gb
+		FROM reply r JOIN member m ON(r.id = m.id)
+		WHERE rno = #{rno}
+	</select>
+	
+	<insert id="answer">
+		INSERT INTO reply(rno,bno,id,content,ref,ref_step,ref_level,brd_gb,regdate)
+		VALUES((SELECT NVL(MAX(rno),0)+1 FROM reply),#{bno},#{id},#{content},#{ref},#{ref_step},#{ref_level},#{brd_gb},sysdate)
+	</insert>
+	
+	<update id="refUpdate">
+		UPDATE reply
+		SET ref_step = ref_step + 1
+		WHERE ref = #{ref}
+		AND ref_step >= #{ref_step}
+	</update>
+	
+	<delete id="refDelete">
+		DELETE FROM reply
+		WHERE ref = #{ref}
+	</delete>
+	
+	<select id="getBoard" resultType="boardList">
+		SELECT bno,title,b.id,content,b.ref ref,b.ref_step ref_step,b.ref_level ref_level,b.regdate regdate,hit,brd_gb,m.name,m.fileName
+		FROM board b JOIN member m ON(b.id = m.id)
+		WHERE bno = #{bno}
+	</select>
+	
+	
+	<sql id="sql">
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE eno is not null
+				AND
+				(content like '%'||#{keyword}||'%'
+				OR id like '%'||#{keyword}||'%')
+			</when>
+			<otherwise>
+				WHERE eno is not null
+				AND
+				${search_option} like
+				'%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<select id="getReplyCount" resultType="int">
+		SELECT COUNT(*)
+		FROM reply r
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE brd_gb = #{brd_gb}
+				AND
+				(content like '%'||#{keyword}||'%'
+				OR r.id like '%'||#{keyword}||'%')
+			</when>
+			<when test="search_option == 'id'">
+					WHERE brd_gb = #{brd_gb}
+					AND
+					(r.id like '%'||#{keyword}||'%')
+			</when>
+			<otherwise>
+				WHERE brd_gb = #{brd_gb}
+				AND
+				${search_option} like
+				'%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="getAdminReplyList" resultType="reply">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM AS rnum,A.*
+		    FROM(SELECT rno,bno,r.id id,content,ref,ref_step,ref_level,r.regdate regdate,m.name name,m.fileName fileName,brd_gb
+		        FROM reply r JOIN member m ON(r.id = m.id)
+		       	<choose>
+					<when test="search_option == 'all'">
+						WHERE brd_gb = #{brd_gb}
+						AND
+						(content like '%'||#{keyword}||'%'
+						OR r.id like '%'||#{keyword}||'%')
+					</when>
+					<when test="search_option == 'id'">
+						WHERE brd_gb = #{brd_gb}
+						AND
+						(r.id like '%'||#{keyword}||'%')
+					</when>
+					<otherwise>
+						WHERE brd_gb = #{brd_gb}
+						AND
+						${search_option} like
+						'%'||#{keyword}||'%'
+					</otherwise>
+				</choose>
+		        ORDER BY rno DESC) A
+		    WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start} 
+	</select>
+	
+	<select id="getlecturereplyCount" resultType="int">
+		SELECT COUNT(*)
+		FROM lecturereply l
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE eno is not null
+				AND
+				(content like '%'||#{keyword}||'%'
+				OR l.id like '%'||#{keyword}||'%')
+			</when>
+			<when test="search_option == 'id'">
+				WHERE eno is not null
+				AND
+				(l.id like '%'||#{keyword}||'%')
+			</when>
+			<otherwise>
+				WHERE eno is not null
+				AND
+				${search_option} like
+				'%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="getAdminlecturereReplyList" resultType="lectureReplyList">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM AS rnum,A.*
+		    FROM(SELECT rno,eno,l.id id,content,ref,ref_step,ref_level,l.regdate regdate,name,fileName
+		         FROM lecturereply l LEFT OUTER JOIN member m ON(l.id = m.id)
+		       	<choose>
+					<when test="search_option == 'all'">
+						WHERE eno is not null
+						AND
+						(content like '%'||#{keyword}||'%'
+						OR l.id like '%'||#{keyword}||'%')
+					</when>
+					<when test="search_option == 'id'">
+						WHERE eno is not null
+						AND
+						(l.id like '%'||#{keyword}||'%')
+					</when>
+					<otherwise>
+						WHERE eno is not null
+						AND
+						${search_option} like
+						'%'||#{keyword}||'%'
+					</otherwise>
+				</choose>
+		        ORDER BY rno DESC) A
+		    WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start} 
+	</select>
+	
+</mapper>

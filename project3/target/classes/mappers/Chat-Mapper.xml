@@ -1,0 +1,95 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Chat-Mapper">
+	<select id="getList" resultType="chatList">
+		SELECT cno,fromID,toID,content,TO_CHAR(c.regdate,'yyyy-MM-dd hh12:mi') regdate,m.fileName fileName
+		FROM chat c JOIN member m ON(c.fromID = m.id)
+		WHERE ((fromID = #{fromID} AND toID = #{toID}) OR (fromID = #{toID} AND toID = #{fromID}))
+		AND cno >#{cno}
+		ORDER BY cno
+	</select>
+	
+	<insert id="regist">
+		INSERT INTO chat
+		VALUES((SELECT NVL(MAX(cno),0)+1 FROM chat),#{fromID},#{toID},#{content},sysdate,0)
+	</insert>
+	
+	<update id="readModify">
+		UPDATE chat
+		SET read = 1
+		WHERE fromID = #{toID}
+		AND toID = #{fromID}
+	</update>
+	
+	
+	<select id="unreadCount" resultType="int">
+		SELECT COUNT(*)
+		FROM (SELECT *
+	          FROM chat
+	          WHERE fromid != toID)
+		WHERE toID = #{fromID}
+		AND read = 0
+	</select>
+	
+	<select id="getMessageList" resultType="chat">
+		SELECT *
+		FROM chat
+		WHERE cno IN (SELECT MAX(cno)
+		            FROM chat
+		            WHERE (fromID = #{fromID} OR toID = #{fromID})
+		            GROUP BY fromID,toID
+		            HAVING fromID != toID)
+	</select>
+	<sql id="sql">
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE (fromID LIKE '%'||#{keyword}||'%' OR toID LIKE '%'||#{keyword}||'%'
+				OR content LIKE '%'||#{keyword}||'%')
+			</when>
+			<when test="search_option == 'id'">
+				WHERE (fromID LIKE '%'||#{keyword}||'%' OR toID LIKE '%'||#{keyword}||'%')
+			</when>
+			<otherwise>
+				WHERE content LIKE '%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</sql>	
+	
+	<select id="getChatListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM chat
+		<include refid="sql"/>
+	</select>
+	
+	<select id="getChatList" resultType="chat">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM AS rnum,A.*
+		    FROM(SELECT *
+		    	 FROM chat
+		        <include refid="sql"/>
+		        ORDER BY cno DESC) A
+		    WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start}
+	</select>
+	
+	<delete id="delete">
+		DELETE FROM chat
+		WHERE cno = #{cno}
+	</delete>
+	
+	<select id="getChatVO" resultType="chat">
+		SELECT *
+		FROM chat
+		WHERE cno = #{cno}
+	</select>
+	
+	<update id="chatModify">
+		UPDATE chat
+		SET content = #{content}
+		WHERE cno = #{cno}
+	</update>
+</mapper>
+
+
+    

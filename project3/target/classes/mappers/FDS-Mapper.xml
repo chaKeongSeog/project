@@ -1,0 +1,131 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="FDS-Mapper">
+	<sql id="search">
+		<choose>
+			<when test="search_option == 'all'">
+				WHERE brd_gb = 'D01'
+				AND (title LIKE '%'||#{keyword}||'%' OR content LIKE '%'||#{keyword}||'%')
+			</when>
+			<otherwise>
+				WHERE brd_gb = 'D01'
+				AND (${search_option} LIKE '%'||#{keyword}||'%')
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<select id="getFdsListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM board
+		<include refid="search"/>
+	</select>
+	
+	<select id="getFdsList" resultType="boardList">
+		SELECT rnum,B.*
+		FROM(SELECT ROWNUM rnum,A.* 
+		     FROM (SELECT bno,title,b.id id,content,ref,ref_step,ref_level,b.regdate regdate,hit,brd_gb,name,fileName
+				   FROM board b LEFT OUTER JOIN member m ON(b.id = m.id)
+		           <include refid="search"/>
+		           ORDER BY ref DESC,ref_step) A
+		     WHERE ROWNUM &lt;= #{end}) B
+		WHERE rnum &gt;= #{start}
+	</select>
+	
+	<insert id="regist">
+		INSERT INTO board(bno,title,id,content,ref,ref_step,ref_level,regdate,hit,brd_gb)
+		VALUES((SELECT NVL(MAX(bno),0)+1 FROM board),#{title},#{id},#{content},(SELECT NVL(MAX(bno),0)+1 FROM board),1,0,sysdate,0,'D01')
+	</insert>
+	
+	<select id="getMaxBno" resultType="int"> 
+		SELECT NVL(MAX(bno),0)
+		FROM board
+		WHERE brd_gb = 'D01'
+	</select>
+	
+	<insert id="registAttach">
+		INSERT INTO attach(ano,bno,originFileName,fileName,path,id,regdate)
+		VALUES((SELECT NVL(MAX(ano),0)+1 FROM attach),#{bno},#{originFileName},#{fileName},#{path},#{id},sysdate)
+	</insert>
+	
+	<select id="getBoard" resultType="boardList">
+		SELECT bno,title,b.id id,content,ref,ref_step,ref_level,b.regdate regdate,hit,brd_gb,name,fileName
+		FROM board b LEFT OUTER JOIN member m ON(b.id = m.id)
+		WHERE b.bno = #{bno}
+	</select>
+	
+	<select id="getAttachList" resultType="attach">
+		SELECT *
+		FROM attach
+		WHERE bno = #{bno}
+	</select>
+	
+	<update id="updateHit">
+		UPDATE board
+		SET hit = hit + 1
+		WHERE bno = #{bno}
+	</update>
+	
+	<insert id="answer">
+		INSERT INTO board(bno,title,content,id,ref,ref_step,ref_level,regdate,hit,brd_gb)
+		VALUES((SELECT NVL(MAX(bno),0)+1 FROM board),#{title},#{content},#{id},#{ref},#{ref_step},#{ref_level},sysdate,0,'D01')
+	</insert>
+	
+	<update id="ref_stepUpdate">
+		UPDATE board
+		SET ref_step = ref_step + 1
+		WHERE ref = #{ref}
+		AND brd_gb = 'D01'
+		AND ref_step >= #{ref_step}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM board
+		WHERE brd_gb = 'D01'
+		AND ref = #{ref}
+		AND ref_step >= #{ref_step}
+	</delete>
+	
+	<select id="getChainAttachList" resultType="attach">
+		SELECT *
+		FROM attach
+		WHERE bno IN (SELECT bno
+		              FROM board
+		              WHERE ref = #{ref}
+		              AND ref_step >= #{ref_step})
+	</select>
+	
+	<select id="getAttach" resultType="attach">
+		SELECT *
+		FROM attach
+		WHERE ano = #{ano}
+	</select>
+	
+	<delete id="attachDelete">
+		DELETE FROM attach
+		WHERE ano = #{ano}
+	</delete>
+	
+	<update id="modify">
+		UPDATE board
+		SET title = #{title},
+		content = #{content}
+		WHERE bno = #{bno}
+	</update>
+	
+	<delete id="pdsdelete">
+		DELETE FROM board
+		WHERE bno = #{bno}
+	</delete>
+	
+	<select id="getAttachCount" resultType="int">
+		SELECT COUNT(*)
+		FROM attach
+		WHERE bno IN (SELECT bno
+		              FROM board
+		              WHERE bno = #{bno})
+	</select>
+</mapper>
+
+
+    
